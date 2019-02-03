@@ -1,0 +1,7 @@
+data
+*.swp
+__pycache__
+results*
+*.out
+*.pt
+
