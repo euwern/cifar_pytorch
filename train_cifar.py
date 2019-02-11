@@ -22,6 +22,8 @@ parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--lr', type=float, default=1e-1)
 parser.add_argument('--lr_steps', default=[80], nargs='+', type=int)
 parser.add_argument('--dtype', choices=['pickle', 'image', 'hdf5'], default='pickle')
+parser.add_argument('--load_epoch', type=int, default=-1)
+parser.add_argument('--save_epoch', type=int, default=1)
 
 args = parser.parse_args()
 save_path = 'results/%s' % (args.dataset)
@@ -63,7 +65,7 @@ def train():
     avg_real_acc = 0
     avg_fake_acc = 0
     count = 0
-    for _, (data, target) in enumerate(tqdm(data_loader)):
+    for _, (data, target) in enumerate(tqdm(train_data_loader)):
         opt.zero_grad()
         data, target  = Variable(data).cuda(), Variable(target.long()).cuda()
         out = model(data)
@@ -82,16 +84,15 @@ def train():
     return avg_loss
 
 def test():
-    load_checkpoint('%s/checkpoint_%d_%d.pth' % (save_path, args.seed, args.max_epochs))
     model.eval()
-    data_loader = torch.utils.data.DataLoader(dataset(dataset=args.dataset + '_' + str(args.seed), train=False, use_pretrain=use_pretrain), batch_size=args.batch_size, num_workers=4)
-   
+  
     pos=0; total=0;
     prediction_list = []
     groundtruth_list = []
-    for _, (data, target) in enumerate(tqdm(data_loader)):
+    for _, (data, target) in enumerate(tqdm(test_data_loader)):
         data, target  = Variable(data).cuda(), Variable(target.long()).cuda()
-        out = model(data)
+        with torch.no_grad():
+            out = model(data)
         pred = torch.max(out, out.dim() - 1)[1]
         pos = pos + torch.eq(pred.cpu().long(), target.data.cpu().long()).sum().item()
         total = total + data.size(0)
@@ -106,9 +107,10 @@ elif args.dataset.startswith('cifar100_'):
     args.num_class = 100
 
 if not args.is_test:
-    data_loader = torch.utils.data.DataLoader(dataset(dataset=args.dataset + '_' + str(args.seed), train=True, use_pretrain=use_pretrain), batch_size=args.batch_size, shuffle=True, num_workers=4)
+    train_data_loader = torch.utils.data.DataLoader(dataset(dataset=args.dataset + '_' + str(args.seed), train=True, use_pretrain=use_pretrain), batch_size=args.batch_size, shuffle=True, num_workers=4)
 
-
+test_data_loader = torch.utils.data.DataLoader(dataset(dataset=args.dataset + '_' + str(args.seed), train=False, use_pretrain=use_pretrain), batch_size=args.batch_size, num_workers=4)
+ 
 class Model(nn.Module):
     def __init__(self, num_class, use_pretrain):
         super(Model, self).__init__()
@@ -147,16 +149,21 @@ if not args.is_test:
 ent_loss = nn.CrossEntropyLoss().cuda()
 
 epoch = 1
+if args.load_epoch != -1:
+    epoch = args.load_epoch + 1
+    load_checkpoint('%s/checkpoint_%d_%d.pth' % (save_path, args.seed, args.load_epoch))
+
 if not args.is_test:
     while True:
         loss = train()
-        if epoch == args.max_epochs:
+        if epoch % args.save_epoch == 0:
             save_checkpoint()
         if epoch == args.max_epochs:
             break
         print(opt.param_groups[0]['lr'])   
         sch.step(epoch)
         epoch = epoch + 1
-    test()
+        test()
 else:
+    load_checkpoint('%s/checkpoint_%d_%d.pth' % (save_path, args.seed, args.max_epochs))
     test()
