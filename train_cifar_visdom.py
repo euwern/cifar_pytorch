@@ -34,6 +34,9 @@ use_pretrain = 'pretrain' in args.model
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
+
+plotter = utils.VisdomLinePlotter(env_name='Experiment1')
+
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed(args.seed)
 torch.cuda.manual_seed_all(args.seed)
@@ -80,8 +83,11 @@ def train():
         curr_acc = compute_acc(out.data, target.data)
         avg_acc = avg_acc + curr_acc
         count = count + 1
+
     avg_loss = avg_loss / count
     avg_acc = avg_acc / count
+    plotter.plot('avg_loss', 'train', 'Loss', epoch, avg_loss )
+
     print('Epoch: %d; Loss: %f; Acc: %.2f; ' % (epoch, avg_loss, avg_acc))
     loss_logger.log(str(avg_loss))
     acc_logger.log(str(avg_acc))
