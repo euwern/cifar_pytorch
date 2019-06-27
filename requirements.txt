@@ -1,0 +1,16 @@
+-f /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/avx512
+-f /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/avx2
+-f /cvmfs/soft.computecanada.ca/custom/python/wheelhouse/generic
+certifi==2019.6.16
+cffi==1.12.3
+mkl-fft==1.0.12
+mkl-random==1.0.2
+numpy==1.16.4
+olefile==0.46
+Pillow==6.0.0
+pycparser==2.19
+scipy==1.2.1
+six==1.12.0
+torch==1.1.0
+torchvision==0.3.0
+tqdm==4.32.2

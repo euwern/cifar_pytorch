@@ -42,42 +42,41 @@ if __name__ == '__main__':
     #===========================================
     # Evenly sample x number of images per class
     #===========================================
-
     test_data = []
-    for ix in range(test_orig_datasets.test_data.shape[0]):
-        test_data.append(test_orig_datasets.test_data[ix])
-    test_labels = test_orig_datasets.test_labels
+    for ix in range(test_orig_datasets.data.shape[0]):
+        test_data.append(test_orig_datasets.data[ix])
+    test_labels = test_orig_datasets.targets
     unsupervised_data = None
 
     if args.subset == -1:
         train_data = []
-        for ix in range(train_orig_datasets.train_data.shape[0]):
-            train_data.append(train_orig_datasets.train_data[ix])
-        train_labels = train_orig_datasets.train_labels
+        for ix in range(train_orig_datasets.data.shape[0]):
+            train_data.append(train_orig_datasets.data[ix])
+        train_labels = train_orig_datasets.targets
     else:
         train_data = []
         train_labels = []
         unsupervised_data = []
         unsupervised_labels = []
-        shuffle_ixs = list(range(train_orig_datasets.train_data.shape[0]))
+        shuffle_ixs = list(range(train_orig_datasets.data.shape[0]))
         shuffle(shuffle_ixs)
         supervised_index = []
         for class_ix in range(num_class):
             num_class_max = args.subset
             num_class_ix = 0
-            for ix in range(train_orig_datasets.train_data.shape[0]):
+            for ix in range(train_orig_datasets.data.shape[0]):
                 curr_ix = shuffle_ixs[ix]
-                if train_orig_datasets.train_labels[curr_ix] == class_ix:
-                    train_data.append(train_orig_datasets.train_data[curr_ix])
+                if train_orig_datasets.targets[curr_ix] == class_ix:
+                    train_data.append(train_orig_datasets.data[curr_ix])
                     train_labels.append(class_ix)
                     num_class_ix = num_class_ix + 1
                     supervised_index.append(curr_ix)
                 if num_class_ix >= num_class_max:
                     break
-        for ix in range(train_orig_datasets.train_data.shape[0]):
+        for ix in range(train_orig_datasets.data.shape[0]):
             if ix not in supervised_index:
-                unsupervised_data.append(train_orig_datasets.train_data[ix])
-                unsupervised_labels.append(train_orig_datasets.train_labels[ix])
+                unsupervised_data.append(train_orig_datasets.data[ix])
+                unsupervised_labels.append(train_orig_datasets.targets[ix])
 
 
     dataset = {}
