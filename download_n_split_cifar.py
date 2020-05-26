@@ -42,6 +42,7 @@ if __name__ == '__main__':
     #===========================================
     # Evenly sample x number of images per class
     #===========================================
+
     test_data = []
     for ix in range(test_orig_datasets.data.shape[0]):
         test_data.append(test_orig_datasets.data[ix])
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
     if args.subset == -1:
         train_data = []
-        for ix in range(train_orig_datasets.data.shape[0]):
+        for ix in range(train_orig_datasets.train_data.shape[0]):
             train_data.append(train_orig_datasets.data[ix])
         train_labels = train_orig_datasets.targets
     else:
